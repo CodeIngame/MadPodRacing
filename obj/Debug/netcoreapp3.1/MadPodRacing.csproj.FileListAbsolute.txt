@@ -1,0 +1,14 @@
+E:\Projets\Visual Studio 2022\MadPodRacing\bin\Debug\netcoreapp3.1\MadPodRacing.exe
+E:\Projets\Visual Studio 2022\MadPodRacing\bin\Debug\netcoreapp3.1\MadPodRacing.deps.json
+E:\Projets\Visual Studio 2022\MadPodRacing\bin\Debug\netcoreapp3.1\MadPodRacing.runtimeconfig.json
+E:\Projets\Visual Studio 2022\MadPodRacing\bin\Debug\netcoreapp3.1\MadPodRacing.runtimeconfig.dev.json
+E:\Projets\Visual Studio 2022\MadPodRacing\bin\Debug\netcoreapp3.1\MadPodRacing.dll
+E:\Projets\Visual Studio 2022\MadPodRacing\bin\Debug\netcoreapp3.1\MadPodRacing.pdb
+E:\Projets\Visual Studio 2022\MadPodRacing\obj\Debug\netcoreapp3.1\MadPodRacing.csproj.AssemblyReference.cache
+E:\Projets\Visual Studio 2022\MadPodRacing\obj\Debug\netcoreapp3.1\MadPodRacing.GeneratedMSBuildEditorConfig.editorconfig
+E:\Projets\Visual Studio 2022\MadPodRacing\obj\Debug\netcoreapp3.1\MadPodRacing.AssemblyInfoInputs.cache
+E:\Projets\Visual Studio 2022\MadPodRacing\obj\Debug\netcoreapp3.1\MadPodRacing.AssemblyInfo.cs
+E:\Projets\Visual Studio 2022\MadPodRacing\obj\Debug\netcoreapp3.1\MadPodRacing.csproj.CoreCompileInputs.cache
+E:\Projets\Visual Studio 2022\MadPodRacing\obj\Debug\netcoreapp3.1\MadPodRacing.dll
+E:\Projets\Visual Studio 2022\MadPodRacing\obj\Debug\netcoreapp3.1\MadPodRacing.pdb
+E:\Projets\Visual Studio 2022\MadPodRacing\obj\Debug\netcoreapp3.1\MadPodRacing.genruntimeconfig.cache
