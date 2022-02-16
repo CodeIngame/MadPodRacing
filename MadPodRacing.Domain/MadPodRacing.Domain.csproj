@@ -5,6 +5,10 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Entities\" />
+  </ItemGroup>
+
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="Powershell.exe -ExecutionPolicy Unrestricted -file &quot;$(SolutionDir)Outputs\merge.ps1&quot;" />
   </Target>

@@ -1,7 +1,7 @@
-﻿using System;
-
-namespace MadPodRacing2
+﻿namespace MadPodRacing2
 {
+    using System;
+
     internal class Program
     {
         static void Main(string[] args)
