@@ -12,6 +12,10 @@
         }
 
         public HashSet<RacePoint> Points { get; set; }
+        /// <summary>
+        /// Nombre de tours
+        /// </summary>
+        public int Lap { get; set; } = 1;
     }
 
     public class RacePointComparer : IEqualityComparer<RacePoint>

@@ -11,5 +11,6 @@ namespace MadPodRacing.Domain.Entities
         /// La position du joueur
         /// </summary>
         public PlayerPoint Position { get; set; }
+        public int Boost { get; set; } = 1;
     }
 }

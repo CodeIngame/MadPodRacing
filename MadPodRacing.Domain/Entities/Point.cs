@@ -35,6 +35,8 @@
         : Point
     {
         public bool IsCurrent { get; set; }
+        public int Id { get; set; }
+        public int DistanceWithNextPoint { get; set; }
 
     }
 }
