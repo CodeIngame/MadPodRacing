@@ -9,7 +9,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Outputs", "Outputs", "{6A31
 		Outputs\output.cs = Outputs\output.cs
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MadPodRacing.Domain", "MadPodRacing.Domain\MadPodRacing.Domain.csproj", "{A6F1F5E7-4442-416F-BA85-FCE3E76E156A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MadPodRacing.Domain", "MadPodRacing.Domain\MadPodRacing.Domain.csproj", "{A6F1F5E7-4442-416F-BA85-FCE3E76E156A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MadPodRacing.Domain.Tests", "MadPodRacing.Domain.Tests\MadPodRacing.Domain.Tests.csproj", "{284A3B81-B9F6-4A0F-BCC3-03376BD0ECAB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{A6F1F5E7-4442-416F-BA85-FCE3E76E156A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A6F1F5E7-4442-416F-BA85-FCE3E76E156A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A6F1F5E7-4442-416F-BA85-FCE3E76E156A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{284A3B81-B9F6-4A0F-BCC3-03376BD0ECAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{284A3B81-B9F6-4A0F-BCC3-03376BD0ECAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{284A3B81-B9F6-4A0F-BCC3-03376BD0ECAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{284A3B81-B9F6-4A0F-BCC3-03376BD0ECAB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
