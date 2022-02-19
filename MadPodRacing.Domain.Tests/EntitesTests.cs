@@ -1,14 +1,17 @@
-﻿using MadPodRacing.Domain.Interface;
+﻿using MadPodRacing.Domain.Entities;
+using MadPodRacing.Domain.Helpers;
+using MadPodRacing.Domain.Interface;
 using MadPodRacing.Domain.Manager;
 using MadPodRacing.Domain.Tests.Common;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace MadPodRacing.Domain.Tests
 {
-    class EntitesTests
+    public class EntitesTests
     {
         [SetUp]
         public void Setup()
@@ -45,6 +48,39 @@ namespace MadPodRacing.Domain.Tests
             gameService.ReadTurn();
             result = gameService.Play();
             Assert.IsNotNull(result);
+
+        }
+
+        [Test]
+        public void RaceEntitie()
+        {
+            var race = new Race
+            {
+                Points = new HashSet<RacePoint>
+                {
+                    new RacePoint { Id = 1, X = 5, Y = 0, IsCurrent = true },
+                    new RacePoint { Id = 2, X = 6, Y = 0, IsCurrent = false },
+                    new RacePoint { Id = 3, X = 7, Y = 0, IsCurrent = false },
+                    new RacePoint { Id = 4, X = 8, Y = 0, IsCurrent = false },
+                }
+            };
+
+            var n = race.NextPoint();
+            Assert.AreEqual(1, n.Id);
+
+            var p = race.PreviousPoint();
+            Assert.AreEqual(4, p.Id);
+
+            race.Points.ToList().ForEach(p => p.IsCurrent = false);
+            race.Points.ToList()[3].IsCurrent = true;
+
+            n = race.NextPoint();
+            Assert.AreEqual(4, n.Id);
+
+            p = race.PreviousPoint();
+            Assert.AreEqual(3, p.Id);
+
+
 
         }
     }

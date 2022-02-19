@@ -18,7 +18,7 @@ namespace MadPodRacing.Domain.Helpers
         public static RacePoint PreviousPoint(this Race r)
         {
             var currentIndex = r.Points.ToList().IndexOf(r.NextPoint());
-            var index = currentIndex == 0 ? r.Points.Count - 1 : currentIndex;
+            var index = currentIndex == 0 ? r.Points.Count - 1 : currentIndex - 1;
             return r.Points.ToList()[index];
         }
     }
