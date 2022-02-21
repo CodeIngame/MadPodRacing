@@ -10,16 +10,24 @@ namespace MadPodRacing.Domain.Helpers
 
     public static class RaceHelpers
     {
-        public static RacePoint NextPoint(this Race r)
+        public static CheckPoint NextPoint(this Race r)
         {
-            return r.Points.First(p => p.IsCurrent);
+            return r.CheckPoint.First(p => p.IsCurrent);
         }
 
-        public static RacePoint PreviousPoint(this Race r)
+        /// <summary>
+        /// Défini le point suivant comme étant le point courant
+        /// </summary>
+        /// <param name="r"></param>
+        public static void SetNextPointToCurrent(this Race r)
         {
-            var currentIndex = r.Points.ToList().IndexOf(r.NextPoint());
-            var index = currentIndex == 0 ? r.Points.Count - 1 : currentIndex - 1;
-            return r.Points.ToList()[index];
+            // CheckPoint courant
+            var next = r.NextPoint();
+            var nn = next.Next(r);
+
+            next.IsCurrent = false;
+            nn.IsCurrent = true;
+
         }
     }
 }

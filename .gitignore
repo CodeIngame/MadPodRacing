@@ -2,3 +2,11 @@
 MadPodRacing.Domain/obj/
 
 MadPodRacing.Domain/bin/
+
+MadPodRacing.WPF/bin/
+
+MadPodRacing.WPF/obj/
+
+MadPodRacing.Domain.Tests/bin/
+
+MadPodRacing.Domain.Tests/obj/

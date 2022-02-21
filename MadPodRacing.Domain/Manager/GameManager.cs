@@ -6,6 +6,7 @@
     using MadPodRacing.Domain.Interface;
     using System;
     using System.Linq;
+    using System.Numerics;
 
     public class GameManager
         : IGameManager
@@ -15,8 +16,10 @@
         public Player Opponent { get; set; }
         public Race Race { get; set; }
 
-        private RacePoint _maxDistancePoint;
-        private RacePoint _previousPoint;
+        private CheckPoint _maxDistancePoint;
+        private CheckPoint _previousPoint;
+        private int _tick = 1;
+        private bool _goNextCheckPoint = false;
 
         public GameManager()
         {
@@ -33,31 +36,41 @@
         {
             using (var trace = new CustomTrace(nameof(GameManager.ReadTurn), endText: "Completed", logLevel: LogLevel.Warning))
             {
-                var nbPoint = Race.Points.Count;
+                _goNextCheckPoint = false;
+                var nbPoint = Race.CheckPoint.Count;
+                Me.PreviousPosition = Me.Position;
+                Opponent.PreviousPosition = Opponent.Position;
+
+
                 var inputs = SystemHelpers.ReadLine(loglevel: LogLevel.Verbose).Split(' ');
                 Me.Position =  new PlayerPoint { X = int.Parse(inputs[0]), Y = int.Parse(inputs[1]), Distance = int.Parse(inputs[4]), Angle = int.Parse(inputs[5]) };
-                var currentRacePoint = new RacePoint { X = int.Parse(inputs[2]), Y = int.Parse(inputs[3]), IsCurrent = false, Id = Race.Points.Count + 1};
-                Race.Points.Add(currentRacePoint);
+                var currentRacePoint = new CheckPoint { X = int.Parse(inputs[2]), Y = int.Parse(inputs[3]), IsCurrent = false, Id = Race.CheckPoint.Count + 1};
+                var addedCheckPoint = Race.CheckPoint.TryAdd(currentRacePoint);
+
                 inputs = SystemHelpers.ReadLine(loglevel: LogLevel.Verbose).Split(' ');
                 Opponent.Position = new PlayerPoint { X = int.Parse(inputs[0]), Y = int.Parse(inputs[1]) };
 
                 // Set the current next point to current in race
-                Race.Points.ToList().ForEach(x => x.IsCurrent = false);
-                Race.Points.First(p => p.IsEquals(currentRacePoint)).IsCurrent = true;
+                Race.CheckPoint.ToList().ForEach(x => x.IsCurrent = false);
+                Race.CheckPoint.First(p => p.IsEquals(currentRacePoint)).IsCurrent = true;
+                Me.NextPoint = Race.NextPoint();
 
 
                 Compute();
 
                 // This condition is for count the real new lap..
-                if (nbPoint == Race.Points.Count && Me.NextPoint.Id == 1 && Race.Points.Count > 1 && _previousPoint?.Id != Me.NextPoint.Id)
+                if (!addedCheckPoint && Me.NextPoint.Id == 1 && Race.CheckPoint.Count > 1 && _previousPoint?.Id != Me.NextPoint.Id)
                 {
                     trace.AddText("New loop ");
                     Race.Lap++;
                     _previousPoint = Me.NextPoint;
                 }
-                trace.AddText($"Race with '{Race.Points.Count}' points - next is {Race.NextPoint()} {{ID: {Race.NextPoint().Id}}}'");
 
                 Analyse();
+                _tick += 1;
+
+                trace.AddText($"Total point '{Race.CheckPoint.Count}' -> {{ID: {Race.NextPoint().Id}}}'");
+
             }
 
         }
@@ -65,27 +78,15 @@
         {
             using (var trace = new CustomTrace(nameof(GameManager.Play), endText: "Completed", logLevel: LogLevel.Warning))
             {
-                // Edit this line to output the target position
-                // and thrust (0 <= thrust <= 100)
-                // i.e.: "x y thrust"
+                
                 var next = Me.NextPoint;
-                //var thurst = Me.Position.Angle > 90 || Me.Position.Angle < -90 ? 0 : 100;
-                var thurst = Me.Power;
+                var thurst = Me.Power > 100 ? "BOOST" : $"{Me.Power}";
 
-                var boost = Me.Boost > 0 
-                    && Me.PreviousPoint == _maxDistancePoint 
-                    && Race.Lap >= 2 && thurst == Constantes.MAX_POWER
-                    && Me.Position.Distance > _maxDistancePoint.DistanceWithNextPoint / 2;
 
-                var result = boost ? "BOOST" : thurst.ToString();
-                if (result == "BOOST")
-                    Me.Boost -= 1;
-
-                trace.AddText($"Previous point : {Me.PreviousPoint?.Id} - ");
-                trace.AddText($"Best distance start at point : {_maxDistancePoint?.Id} - dist :  {_maxDistancePoint?.DistanceWithNextPoint} - ");
                 trace.AddText($"Lap {Race.Lap} - Boost : {Me.Boost} - Angle {Me.Position.Angle} - Distance {Me.Position.Distance}");
-
-                return $"{next.X} {next.Y} {result}";
+                if(_goNextCheckPoint)
+                    return $"{next.X} {next.Y} {thurst}";
+                return $"{next.NewX} {next.NewY} {thurst}";
             }
            
 
@@ -95,24 +96,104 @@
         {
             using (var trace = new CustomTrace(nameof(GameManager.Compute), endText: "Completed", logLevel: LogLevel.Verbose))
             {
-                Me.NextPoint = Race.NextPoint();
-                Me.PreviousPoint = Race.PreviousPoint();
+                ComputeSpeed();
+                ComputePath();
+            }
+        }
 
-                if(Me.Position.Angle > 90 || Me.Position.Angle < -90)
+        private void ComputeSpeed()
+        {
+            using (var trace = new CustomTrace(nameof(GameManager.ComputeSpeed), endText: "Completed", logLevel: LogLevel.Warning))
+            {
+                // On est à l'envers
+                if (Me.Position.Angle > 90 || Me.Position.Angle < -90)
                 {
-                    Me.Power = 0;
+                    trace.AddText("A l'envers");
+                    Me.Power = Constantes.HALF_POWER;
                     return;
                 }
 
-                Me.Power = Me.Position.Distance > Constantes.MIN_DISTANCE * 2
-                    ? 100
-                    : (int)(Math.Abs(Math.Cos(Me.Position.Angle.ToRadian()) * 100));
+                // On est loin, on a du boost et dans la bonne direction
+                if(Me.ComputeDistanceNextCheckPoint() > Constantes.CHECKPOINT_DISTANCE_IS_FAR 
+                    && Math.Abs(Me.Position.Angle) < Constantes.SAFE_ANGLE_BOOST && Me.Boost > 0)
+                {
+                    trace.AddText("Fonce!");
+                    Me.Power = 101;
+                    Me.Boost -= 1;
+                    return;
+                }
 
-                if (Me.Power >= 90)
-                    Me.Power = Constantes.MAX_POWER;
+                // On a pas utiliser le boost, l'angle est bon, on est au dernier tours sur le dernier point
+                if(Me.Position.Angle < Constantes.SAFE_ANGLE_BOOST && Race.Lap == 3 && Me.NextPoint.Id == Race.CheckPoint.Count - 1)
+                {
+                    if (Me.Boost > 0)
+                    {
+                        trace.AddText("Vite!");
+                        Me.Power = 102;
+                        Me.Boost -= 1;
+                    } 
+                    else
+                    {
+                        trace.AddText("100!");
+                        Me.Power = Constantes.MAX_POWER;
+                    }
 
-                if (Me.Position.Distance <= Constantes.MIN_DISTANCE && Me.Power > Constantes.HALF_POWER)
-                    Me.Power /= 2;
+                    return;
+                }
+
+                // On est proche du point, on arrive vite, on va ralentir en ciblant le prochain point
+                if(Me.Position.Distance < Constantes.CHECKPOINT_DISTANCE_MOVE_NEXT 
+                    && Me.ComputeSpeed() > Constantes.SPEED_FAST
+                    && Me.AngleWithNextPoint() < Me.LimitAngle() && Race.Lap > 1
+                    )
+                {
+                    trace.AddText("Freine!");
+                    Me.Power = Constantes.STOP_POWER;
+                    Race.SetNextPointToCurrent();
+                    _goNextCheckPoint = true;
+                    return;
+                }
+
+                // On est proche, on ralenti
+                if(Me.Position.Distance < Constantes.MIN_DISTANCE 
+                    && Me.ComputeSpeed() > Constantes.SPEED_FAST)
+                {
+                    trace.AddText("Ralenti!");
+                    Me.Power = Constantes.SLOW_POWER;
+                    return;
+                }
+
+                // Calcul de gauss à partir de l'angle
+                trace.AddText("Gauss!");
+                var gauss = Constantes.THRUST_AMPLITUDE * Math.Exp(-Math.Pow(Me.Position.Angle, 2) / Constantes.THRUST_DEVIATION);
+                Me.Power = Math.Min(100, (int)gauss);
+            }
+        }
+
+        private void ComputePath()
+        {
+            using (var trace = new CustomTrace(nameof(GameManager.ComputePath), endText: "Completed"))
+            {
+                int[] mapCenter = { Constantes.MAP_SIZE_X / 2, Constantes.MAP_SIZE_Y / 2 };
+
+                // L'idée est de viser le checkpoint coté centre de la carte
+                var next = Race.NextPoint();
+                int[] checkPoint = { next.X - mapCenter[0], next.Y - mapCenter[1] };
+                var checkPointNorm = checkPoint.ToPythagore();
+                int[] checkPointUnit = { (int)(checkPoint[0] / checkPointNorm), (int)(checkPoint[1] / checkPointNorm) };
+
+                next.NewX = next.X - (checkPointUnit[0] * Constantes.CHECKPOINT_RADIUS);
+                next.NewY = next.Y - (checkPointUnit[1] * Constantes.CHECKPOINT_RADIUS);
+
+                var toCheckPoint = new Vector2(next.X - Me.Position.X, next.Y - Me.Position.Y);
+                var theta = Me.DiffAngle().ToRadian();
+                var cos = (float)Math.Cos(theta);
+                var sin = (float)Math.Sin(theta);
+                var r = new Vector2[] { new Vector2( cos, -sin ), new Vector2(sin, cos) };
+                var toTargetPoint = new Vector2(Vector2.Dot(r[0], toCheckPoint), Vector2.Dot(r[1], toCheckPoint));
+
+                next.NewX = (int)toTargetPoint.X + Me.Position.X;
+                next.NewY = (int)toTargetPoint.Y + Me.Position.Y;
 
             }
         }
@@ -121,23 +202,13 @@
         {
             using (var trace = new CustomTrace(nameof(GameManager.Analyse), endText: "Completed", logLevel: LogLevel.Verbose))
             {
-                if (Race.Lap == 2)
-                {
-                    for (var i = 0; i < Race.Points.Count; i++)
-                    {
-                        var current = Race.Points.ToList()[i];
-                        RacePoint next;
-                        if (i == Race.Points.Count - 1)
-                            next = Race.Points.ToList()[0];
-                        else
-                            next = Race.Points.ToList()[i + 1];
-
-                        current.DistanceWithNextPoint = (int)current.ToManhattanDistance(next);
-
-                    }
-
-                    _maxDistancePoint = Race.Points.OrderByDescending(p => p.DistanceWithNextPoint).First();
-                }
+                var distanceWithNextPoint = Me.ComputeDistanceNextCheckPoint();
+                var speed = Me.ComputeSpeed();
+                var toCheckPoint = Me.ToCheckPoint();
+                var angleWithNextPoint = Me.AngleWithNextPoint();
+                var limitAngle = Me.LimitAngle();
+                var targetAngle = Me.TargetAngle();
+                var diff = Me.DiffAngle();
             }
         }
     }

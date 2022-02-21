@@ -38,16 +38,25 @@ namespace MadPodRacing.Domain.Tests
                 },
             };
             ConsoleHelpers.PushInReader(msg[0]);
-            IGameManager gameService = new GameManager();
+            GameManager gameService = new GameManager();
 
+            gameService.Initialize();
             gameService.ReadTurn();
             var result = gameService.Play();
             Assert.IsNotNull(result);
+
+            var me = gameService.Me;
+
+            Assert.AreEqual(me.Position.Distance, Math.Ceiling(me.ComputeDistanceNextCheckPoint()));
+            Assert.IsTrue(me.ComputeSpeed() == 0);
+
 
             ConsoleHelpers.PushInReader(msg[1]);
             gameService.ReadTurn();
             result = gameService.Play();
             Assert.IsNotNull(result);
+            Assert.IsTrue(me.ComputeSpeed() > 0);
+
 
         }
 
@@ -56,30 +65,45 @@ namespace MadPodRacing.Domain.Tests
         {
             var race = new Race
             {
-                Points = new HashSet<RacePoint>
+                CheckPoint = new List<CheckPoint>
                 {
-                    new RacePoint { Id = 1, X = 5, Y = 0, IsCurrent = true },
-                    new RacePoint { Id = 2, X = 6, Y = 0, IsCurrent = false },
-                    new RacePoint { Id = 3, X = 7, Y = 0, IsCurrent = false },
-                    new RacePoint { Id = 4, X = 8, Y = 0, IsCurrent = false },
+                    new CheckPoint { Id = 1, X = 5, Y = 0, IsCurrent = true },
+                    new CheckPoint { Id = 2, X = 6, Y = 0, IsCurrent = false },
+                    new CheckPoint { Id = 3, X = 7, Y = 0, IsCurrent = false },
+                    new CheckPoint { Id = 4, X = 8, Y = 0, IsCurrent = false },
                 }
             };
 
             var n = race.NextPoint();
             Assert.AreEqual(1, n.Id);
 
-            var p = race.PreviousPoint();
+            var p = n.Previous(race);
             Assert.AreEqual(4, p.Id);
 
-            race.Points.ToList().ForEach(p => p.IsCurrent = false);
-            race.Points.ToList()[3].IsCurrent = true;
+            var pp = n.Previous(race)
+                .Previous(race);
+            Assert.AreEqual(3, pp.Id);
+
+            var nn = n.Next(race);
+            Assert.AreEqual(2, nn.Id);
+
+            race.CheckPoint.ToList().ForEach(p => p.IsCurrent = false);
+            race.CheckPoint.ToList()[3].IsCurrent = true;
 
             n = race.NextPoint();
             Assert.AreEqual(4, n.Id);
 
-            p = race.PreviousPoint();
+            p = n.Previous(race);
             Assert.AreEqual(3, p.Id);
 
+            nn = n.Next(race);
+            Assert.AreEqual(1, nn.Id);
+
+            var added = race.CheckPoint.TryAdd(new CheckPoint { Id = 1, X = 5, Y = 0, IsCurrent = false });
+            Assert.IsFalse(added);
+
+            added = race.CheckPoint.TryAdd(new CheckPoint { Id = 1, X = 1, Y = 0, IsCurrent = false });
+            Assert.IsTrue(added);
 
 
         }

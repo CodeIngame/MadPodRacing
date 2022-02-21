@@ -11,6 +11,16 @@
         public int X { get; set; }
         public int Y { get; set; }
 
+        public Point()
+        {
+        }
+
+        public Point(int x, int y)
+        {
+            this.X = x;
+            this.Y = y;
+        }
+
         public override string ToString()
         {
             return $"[{X}:{Y}]";
@@ -20,6 +30,14 @@
     public class PlayerPoint
         : Point
     {
+        public PlayerPoint()
+        {
+        }
+
+        public PlayerPoint(int x, int y) : base(x, y)
+        {
+
+        }
 
         /// <summary>
         /// distance to the next checkpoint
@@ -31,12 +49,31 @@
         public int Angle { get; set; }
     }
 
-    public class RacePoint
+    public class CheckPoint
         : Point
     {
+
+        public CheckPoint()
+        {
+
+        }
+
+        public CheckPoint(int x, int y) : base(x, y)
+        {
+
+        }
+
         public bool IsCurrent { get; set; }
         public int Id { get; set; }
-        public int DistanceWithNextPoint { get; set; }
+
+        /// <summary>
+        /// Computed X
+        /// </summary>
+        public int NewX { get; set; }
+        /// <summary>
+        /// Computed Y
+        /// </summary>
+        public int NewY { get; set; }
 
     }
 }

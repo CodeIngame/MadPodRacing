@@ -8,24 +8,25 @@
     {
         public Race()
         {
-            Points = new HashSet<RacePoint>(new RacePointComparer());
+            CheckPoint = new List<CheckPoint>();
         }
 
-        public HashSet<RacePoint> Points { get; set; }
+        public List<CheckPoint> CheckPoint { get; set; }
+
         /// <summary>
         /// Nombre de tours
         /// </summary>
         public int Lap { get; set; } = 1;
     }
 
-    public class RacePointComparer : IEqualityComparer<RacePoint>
+    public class RacePointComparer : IEqualityComparer<CheckPoint>
     {
-        public bool Equals([AllowNull] RacePoint p1, [AllowNull] RacePoint p2)
+        public bool Equals([AllowNull] CheckPoint p1, [AllowNull] CheckPoint p2)
         {
             return p1.IsEquals(p2);
         }
 
-        public int GetHashCode([DisallowNull] RacePoint obj)
+        public int GetHashCode([DisallowNull] CheckPoint obj)
         {
             return obj.X ^ obj.Y;
 
